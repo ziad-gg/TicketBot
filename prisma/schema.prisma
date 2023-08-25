@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+type Tickets {
+  all     Int @default(0)
+  opened  Int @default(0)
+  closed  Int @default(0)
+  claimed Int @default(0)
+}
+
+type Statics {
+  tickets Tickets
+}
+
+model User {
+  id       String @id @map("_id")
+  username String
+}
+
+model Guild {
+  id           String   @id @map("_id")
+  statics      Statics
+  supportRoles String[] @default([])
+  embeds       Embeds[]
+  Panals       Panal[]
+}
+
+model Panal {
+  id                   String   @id @map("_id")
+  guild                Guild    @relation(fields: [guildId], references: [id])
+  guildId              String
+  name                 String
+  description          String
+  category             String
+  limit                Int      @default(5)
+  blackListRoles       String[] @default([])
+  allowedRoles         String[] @default([])
+  supportRoles         String[] @default([])
+  closeChannelLogMenu  String?
+  openLogChannelMenu   String?
+  claimLogChannelMenu  String?
+  deleteLogChannelMenu String?
+  claimButton          Boolean  @default(true)
+  addAllBots           Boolean  @default(false)
+  oneStepClose         Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  disabled             Boolean  @default(false)
+  Tickets              Ticket[]
+}
+
+model Embeds {
+  id                String  @id @map("_id")
+  name              String  @unique
+  guild             Guild   @relation(fields: [guildId], references: [id])
+  guildId           String
+  title             String?
+  description       String?
+  imageURL          String?
+  Footer            String?
+  GuildIcon         Boolean @default(false)
+  GuildIconInFooter Boolean @default(false)
+  buttonStyle       String
+  buttonText        String
+  buttonEmoji       String
+  embedColor        String
+}
+
+model Auth {
+  id            String @id @map("_id")
+  username      String @unique
+  access_token  String @unique
+  refresh_token String @unique
+}
+
+model Ticket {
+  id         String    @id @map("_id")
+  name       String
+  panal      Panal     @relation(fields: [panalId], references: [id])
+  panalId    String
+  openedBy   String
+  closedBy   String?
+  deletedBy  String?
+  claimedBy  String?
+  users      String[]  @default([])
+  deleted    Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  closedAt   DateTime?
+  transcript String?
+}
